@@ -66,10 +66,10 @@ for linha in entrada.strip().splitlines():
             "nomeTime1": time1,
             "nomeTime2": time2,
             "opcoes": [
-                {"titulo": "canal 1", "url": "", "referer": "https://nossoplayeronlinehd.blog/"},
-                {"titulo": "canal 2", "url": "", "referer": "https://links.futemais.net"},
+                {"titulo": "canal 1", "url": "", "referer": ""},
+                {"titulo": "canal 2", "url": "", "referer": ""},
                 {"titulo": "canal 3", "url": "", "referer": "https://vecloud.eu"},
-                {"titulo": "canal 4", "url": "", "referer": "https://embedcanaistv.com"},
+                {"titulo": "canal 4", "url": "", "referer": ""},
             ],
             "placar": "0 x 0",
             "premium": False,
