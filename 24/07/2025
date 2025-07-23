@@ -1,0 +1,86 @@
+import json
+import re
+
+entrada = """
+SUL-AMERICANA
+19h00 - Guarani x Universidad de Chile - Paramount Network e Paramount+
+21h30 - Atlético/MG x Bucaramanga - Espn e Disney+
+
+BRASILEIRÃO SÉRIE A
+19h00 - Juventude x São Paulo - Premiere
+
+BRASILEIRÃO SÉRIE B
+19h00 - Botafogo/SP x Criciúma - sportv
+21h35 - Remo x Avaí - YouTube (Desimpedidos), RedeTV!, Espn4 e Disney+
+
+BEISEBOL
+19h30 - MLB: Tigers x Blue Jays - Espn3 e Disney+
+20h40 - MLB: Padres x Cardinals - MLB.tv
+
+CICLISMO
+10h00 - Tour de France: etapa 18 - Espn3 e Disney+
+
+TÊNIS
+19h00 - ATP 500 e WTA 500 de Washington: segunda rodada - Espn2 e Disney+
+"""
+data_novos = "2025-07-24"
+
+eventos = []
+campeonato_atual = None
+linha_evento_regex = re.compile(r'^\d{1,2}h\d{2} - .+ - .+')
+
+for linha in entrada.strip().splitlines():
+    linha = linha.strip()
+    if not linha:
+        continue
+
+    # Detecta nova seção de campeonato se a linha não for de evento
+    if not linha_evento_regex.match(linha):
+        campeonato_atual = linha
+        continue
+
+    # Processa linha de evento
+    try:
+        partes = linha.split(' - ')
+        if len(partes) < 3:
+            continue
+
+        horario = partes[0].strip().replace('h', ':')
+        nome_evento = partes[1].strip()
+        local = partes[2].strip()
+
+        if ' x ' in nome_evento:
+            time1, time2 = nome_evento.split(' x ')
+        else:
+            time1 = time2 = ""
+
+        evento = {
+            "campeonato": campeonato_atual,
+            "data": data_novos,
+            "duracaoMinutos": 120,
+            "escudoTime1": "",
+            "escudoTime2": "",
+            "horario": horario,
+            "local": local,
+            "nome": nome_evento,
+            "nomeTime1": time1,
+            "nomeTime2": time2,
+            "opcoes": [
+                {"titulo": "canal 1", "url": "", "referer": "https://nossoplayeronlinehd.blog/"},
+                {"titulo": "canal 2", "url": "", "referer": "https://links.futemais.net"},
+                {"titulo": "canal 3", "url": "", "referer": "https://vecloud.eu"},
+                {"titulo": "canal 4", "url": "", "referer": "https://embedcanaistv.com"},
+            ],
+            "placar": "0 x 0",
+            "premium": False,
+            "status": "NS"
+        }
+        eventos.append(evento)
+
+    except Exception as e:
+        print(f"⚠️ Erro ao processar linha: {linha} → {e}")
+
+with open("eventos_gerados.json", "w", encoding="utf-8") as f:
+    json.dump(eventos, f, ensure_ascii=False, indent=2)
+
+print("✅ Arquivo 'eventos_gerados.json' corrigido com sucesso!")
