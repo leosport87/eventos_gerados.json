@@ -1,0 +1,83 @@
+import json
+import re
+
+entrada = """
+FUTEBOL NAS AMÉRICAS
+19h00 - Campeonato Argentino: Sarmiento x Lanús - Disney+
+21h00 - Campeonato Argentino: Independiente Rivadavia x Belgrano - Disney+
+
+BEISEBOL
+20h00 - MLB: Phillies x Yankees - Apple TV
+20h00 - MLB: Dodgers x Red Sox - Espn3 e Disney+
+21h10 - MLB: Guardians x Royals - Apple TV
+
+LUTAS
+21h00 - Boxe: Kevin Vivas x Gustavo Perez - Espn4 e Disney+
+
+CICLISMO
+10h00 - Tour de France: etapa 19 - Espn3 e Disney+
+
+TÊNIS
+15h00 - ATP 500 e WTA 500 de Washington: quartas de final - Espn2 e Disney+
+"""
+data_novos = "2025-07-25"
+
+eventos = []
+campeonato_atual = None
+linha_evento_regex = re.compile(r'^\d{1,2}h\d{2} - .+ - .+')
+
+for linha in entrada.strip().splitlines():
+    linha = linha.strip()
+    if not linha:
+        continue
+
+    # Detecta nova seção de campeonato se a linha não for de evento
+    if not linha_evento_regex.match(linha):
+        campeonato_atual = linha
+        continue
+
+    # Processa linha de evento
+    try:
+        partes = linha.split(' - ')
+        if len(partes) < 3:
+            continue
+
+        horario = partes[0].strip().replace('h', ':')
+        nome_evento = partes[1].strip()
+        local = partes[2].strip()
+
+        if ' x ' in nome_evento:
+            time1, time2 = nome_evento.split(' x ')
+        else:
+            time1 = time2 = ""
+
+        evento = {
+            "campeonato": campeonato_atual,
+            "data": data_novos,
+            "duracaoMinutos": 120,
+            "escudoTime1": "",
+            "escudoTime2": "",
+            "horario": horario,
+            "local": local,
+            "nome": nome_evento,
+            "nomeTime1": time1,
+            "nomeTime2": time2,
+            "opcoes": [
+                {"titulo": "canal 1", "url": "", "referer": ""},
+                {"titulo": "canal 2", "url": "", "referer": ""},
+                {"titulo": "canal 3", "url": "", "referer": ""},
+                {"titulo": "canal 4", "url": "", "referer": ""},
+            ],
+            "placar": "0 x 0",
+            "premium": False,
+            "status": "NS"
+        }
+        eventos.append(evento)
+
+    except Exception as e:
+        print(f"⚠️ Erro ao processar linha: {linha} → {e}")
+
+with open("eventos_gerados.json", "w", encoding="utf-8") as f:
+    json.dump(eventos, f, ensure_ascii=False, indent=2)
+
+print("✅ Arquivo 'eventos_gerados.json' corrigido com sucesso!")
