@@ -1,0 +1,103 @@
+import json
+import re
+
+entrada = """
+BRASILEIRÃO SÉRIE A
+16h00 - São Paulo x Fluminense - Globo (menos MG e CE) e Premiere
+16h00 - Cruzeiro x Ceará - Globo (MG e CE) e Premiere
+18h30 - Internacional x Vasco - YouTube (CazéTV), Record, PlayPlus, R7.com e Premiere
+18h30 - Bahia x Juventude - Premiere
+20h30 - Flamengo x Atlético/MG - sportv, sportv4k e Premiere
+
+BRASILEIRÃO SÉRIE B
+16h00 - Coritiba x Amazonas - Espn e Disney+
+16h00 - Volta Redonda x Vila Nova - Disney+
+18h30 - América/MG x Athletico/PR - Disney+
+19h00 - Atlético/GO x Chapecoense - YouTube (Desimpedidos), RedeTV! e Disney+
+
+BRASILEIRÃO SÉRIE D
+16h00 - Santa Cruz-PE x Treze - YouTube (Metrópoles)
+
+FUTEBOL EUROPEU
+08h30 - Amistoso: Arsenal x Newcastle - Espn e Disney+
+
+FUTEBOL NAS AMÉRICAS
+18h30 - Campeonato Argentino: Huracán x Boca Juniors - Espn4 e Disney+
+20h30 - Campeonato Argentino: River Plate x San Lorenzo - Espn4 e Disney+
+
+ESPORTES A MOTOR
+10h00 - Fórmula 1: GP da Bélgica (corrida) - Band, BandPlay e band.com.br
+14h00 - IndyNXT: GP de Laguna Seca (corrida) - Espn4 e Disney+
+15h00 - NASCAR Cup Series: etapa de Indianápolis - PicTV (Motorsport e Grande Prêmio) e YpêTV
+16h00 - IndyCar: GP de Laguna Seca (corrida) - TV Cultura, Espn4 e Disney+
+
+CICLISMO
+08h00 - Tour de France: etapa 21 - Espn3 e Disney+
+11h00 - Tour de France Feminino: etapa 2 - Espn3 e Disney+
+
+TÊNIS
+15h30 - WTA 500 de Washington: final - Espn2 e Disney+
+18h00 - ATP 500 de Washington: final - Espn2 e Disney+
+20h00 - Aberto do Canadá: primeira rodada - Espn2 e Disney+
+"""
+data_novos = "2025-07-27"
+
+eventos = []
+campeonato_atual = None
+linha_evento_regex = re.compile(r'^\d{1,2}h\d{2} - .+ - .+')
+
+for linha in entrada.strip().splitlines():
+    linha = linha.strip()
+    if not linha:
+        continue
+
+    # Detecta nova seção de campeonato se a linha não for de evento
+    if not linha_evento_regex.match(linha):
+        campeonato_atual = linha
+        continue
+
+    # Processa linha de evento
+    try:
+        partes = linha.split(' - ')
+        if len(partes) < 3:
+            continue
+
+        horario = partes[0].strip().replace('h', ':')
+        nome_evento = partes[1].strip()
+        local = partes[2].strip()
+
+        if ' x ' in nome_evento:
+            time1, time2 = nome_evento.split(' x ')
+        else:
+            time1 = time2 = ""
+
+        evento = {
+            "campeonato": campeonato_atual,
+            "data": data_novos,
+            "duracaoMinutos": 120,
+            "escudoTime1": "",
+            "escudoTime2": "",
+            "horario": horario,
+            "local": local,
+            "nome": nome_evento,
+            "nomeTime1": time1,
+            "nomeTime2": time2,
+            "opcoes": [
+                {"titulo": "canal 1", "url": "", "referer": ""},
+                {"titulo": "canal 2", "url": "", "referer": ""},
+                {"titulo": "canal 3", "url": "", "referer": ""},
+                {"titulo": "canal 4", "url": "", "referer": ""},
+            ],
+            "placar": "0 x 0",
+            "premium": False,
+            "status": "NS"
+        }
+        eventos.append(evento)
+
+    except Exception as e:
+        print(f"⚠️ Erro ao processar linha: {linha} → {e}")
+
+with open("eventos_gerados.json", "w", encoding="utf-8") as f:
+    json.dump(eventos, f, ensure_ascii=False, indent=2)
+
+print("✅ Arquivo 'eventos_gerados.json' corrigido com sucesso!")
