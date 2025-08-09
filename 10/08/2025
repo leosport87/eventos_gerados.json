@@ -1,0 +1,112 @@
+import json
+import re
+
+entrada = """
+BRASILEIRÃO SÉRIE A
+16h00 - Vasco x Atlético/MG - Globo (RJ, MG, RS, SC, ES, BA, MA, PB, SE, AC, AP, AM, RO, RR, TO e DF) e Premiere
+16h00 - Palmeiras x Ceará - Globo (SP, CE, PR, GO, MT, MS, Al, PE, PI, RN e PA) e Premiere
+18h30 - Cruzeiro x Santos - YouTube (CazéTV), Record, R7.com, PlayPlus e Premiere
+20h30 - Grêmio x Sport - Premiere
+
+BRASILEIRÃO SÉRIE B
+16h00 - Avaí x Cuiabá - Espn e Disney+
+18h30 - Atlético/GO x Botafogo/SP - Disney+
+
+BRASILEIRÃO SÉRIE C
+11h00 - Londrina x Náutico - Dazn e SportyNet+
+16h30 - Anápolis x Brusque - SportyNet+
+19h00 - Retrô x São Bernardo - YouTube (SportyNet), SportyNet e SportyNet+
+
+FUTEBOL INGLÊS
+11h00 - FA Community Shield: Crystal Palace x Liverpool - Espn e Disney+
+12h30 - Championship: Leicester x Sheffield Wednesday - Disney+
+
+FUTEBOL EUROPEU
+09h30 - Campeonato Holandês: Ajax x Telstar - Espn2 e Disney+
+11h00 - Amistoso: Chelsea x Milan - YouTube (SportyNet), SportyNet e Dazn
+12h30 - Amistoso: Borussia Dortmund x Juventus - YouTube (SportyNet), SportyNet e Dazn
+16h30 - Campeonato Português: Braga x Tondela - Disney+
+
+FUTEBOL NAS AMÉRICAS
+20h00 - Campeonato Argentino: Argentinos Juniors x Unión de Santa Fe - Espn4 e Disney+
+
+BEISEBOL
+14h00 - MLB: Royals | Twins - Roku
+17h10 - MLB: Blue Jays | Dodgers - MLB.tv
+20h10 - MLB: Cubs | Cardinals - Espn3 e Disney+
+
+MOTOR
+15h00 - NASCAR Cup Series: etapa de Watkins Glen - PivTV
+16h00 - IndyCar: GP de Portland (corrida) - TV Cultura, Espn4 e Disney+
+
+FUTEBOL AMERICANO
+14h00 - NFL (pré-temporada): Bears | Dolphins - Dazn (NFL Game Pass)
+17h05 - NFL (pré-temporada): Chargers | Saints - Dazn (NFL Game Pass)
+
+TÊNIS
+12h00 - ATP e WTA 1000 de Cincinnati: segunda rodada - Espn2 e Disney+
+
+GOLFE
+13h00 - FedEx St. Jude Championship: rodada final - Espn3 e Disney+
+"""
+data_novos = "2025-08-10"
+
+eventos = []
+campeonato_atual = None
+linha_evento_regex = re.compile(r'^\d{1,2}h\d{2} - .+ - .+')
+
+for linha in entrada.strip().splitlines():
+    linha = linha.strip()
+    if not linha:
+        continue
+
+    # Detecta nova seção de campeonato se a linha não for de evento
+    if not linha_evento_regex.match(linha):
+        campeonato_atual = linha
+        continue
+
+    # Processa linha de evento
+    try:
+        partes = linha.split(' - ')
+        if len(partes) < 3:
+            continue
+
+        horario = partes[0].strip().replace('h', ':')
+        nome_evento = partes[1].strip()
+        local = partes[2].strip()
+
+        if ' x ' in nome_evento:
+            time1, time2 = nome_evento.split(' x ')
+        else:
+            time1 = time2 = ""
+
+        evento = {
+            "campeonato": campeonato_atual,
+            "data": data_novos,
+            "duracaoMinutos": 120,
+            "escudoTime1": "",
+            "escudoTime2": "",
+            "horario": horario,
+            "local": local,
+            "nome": nome_evento,
+            "nomeTime1": time1,
+            "nomeTime2": time2,
+            "opcoes": [
+                {"titulo": "canal 1", "url": "", "referer": ""},
+                {"titulo": "canal 2 Tente 2 Vezes", "url": "", "referer": ""},
+                {"titulo": "canal 3", "url": "", "referer": ""},
+                {"titulo": "canal 4", "url": "", "referer": ""},
+            ],
+            "placar": "0 x 0",
+            "premium": False,
+            "status": "NS"
+        }
+        eventos.append(evento)
+
+    except Exception as e:
+        print(f"⚠️ Erro ao processar linha: {linha} → {e}")
+
+with open("eventos_gerados.json", "w", encoding="utf-8") as f:
+    json.dump(eventos, f, ensure_ascii=False, indent=2)
+
+print("✅ Arquivo 'eventos_gerados.json' corrigido com sucesso!")
